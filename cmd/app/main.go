@@ -1,50 +1,54 @@
 package main
 
 import (
-	"log"
+	"context"
+	"errors"
 	"net/http"
 	"os"
-	"strconv"
+	"os/signal"
+	"syscall"
 	"time"
 
+	"example.com/simple-crud/internal/config"
+	"example.com/simple-crud/internal/routers"
+	"example.com/simple-crud/internal/server"
 	logs "example.com/simple-crud/pkg/logger"
 )
 
-type ServerConfig struct {
-	Host         string
-	Port         int
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-}
-
-func getServerConfig() ServerConfig {
-	serverConfig := ServerConfig{}
-	serverConfig.Host = os.Getenv("SERVER_HOST")
-	serverConfig.Port, _ = strconv.Atoi(os.Getenv("SERVER_PORT"))
-
-	readTimeout, _ := strconv.Atoi(os.Getenv("SERVER_READ_TIMEOUT"))
-	serverConfig.ReadTimeout = time.Duration(readTimeout) * time.Second
-	writeTimeout, _ := strconv.Atoi(os.Getenv("SERVER_WRITE_TIMEOUT"))
-	serverConfig.ReadTimeout = time.Duration(writeTimeout) * time.Second
-
-	return serverConfig
-}
-
 func main() {
-	// Get server config
-	serverConfig := getServerConfig()
-	serverAddr := serverConfig.Host + ":" + strconv.Itoa(serverConfig.Port)
+	// Init logger
+	logger := logs.NewCustomLogger()
 
-	// Make server with config
-	s := &http.Server{
-		Addr:           serverAddr,
-		ReadTimeout:    serverConfig.ReadTimeout,
-		WriteTimeout:   serverConfig.WriteTimeout,
-		MaxHeaderBytes: 1 << 20,
+	// Get server config
+	cfg, err := config.Init()
+	if err != nil {
+		logger.Error("error when init config. detail: %v", err)
+		os.Exit(1)
 	}
 
-	logger := logs.NewCustomLogger()
-	logger.Infof("server starting at %s\n", serverAddr)
+	srvHandler := routers.Init()
 
-	log.Fatal(s.ListenAndServe())
+	// Make server with config
+	srv := server.NewServer(cfg, srvHandler)
+
+	go func() {
+		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
+			logger.Errorf("error occurred while running http server. detail: %s", err.Error())
+		}
+	}()
+
+	logger.Info("server started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+
+	<-quit
+
+	const timeout = 5 * time.Second
+	ctx, shutdown := context.WithTimeout(context.Background(), timeout)
+	defer shutdown()
+
+	if err := srv.Stop(ctx); err != nil {
+		logger.Errorf("failed to stop server. detail: %v", err)
+	}
 }

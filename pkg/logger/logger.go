@@ -7,4 +7,6 @@ type Logger interface {
 	Infof(format string, a ...any)
 	Error(a ...any)
 	Errorf(format string, a ...any)
+	Fatal(a ...any)
+	Fatalf(format string, a ...any)
 }
