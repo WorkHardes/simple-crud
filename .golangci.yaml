@@ -1,45 +1,27 @@
 run:
   timeout: 1m
+
+linters-settings:
+  dogsled:
+    max-blank-identifiers: 3
+  lll:
+    line-length: 90
+    tab-width: 1
+  revive:
+    rules:
+      - name: empty-lines
+
 linters:
-  disable-all: true
   enable:
-    - asciicheck
-    - depguard
-    - dogsled
-    - errcheck
-    - exhaustive
-    - exportloopref
-    - gocognit
-    - gocyclo
-    - gofmt
-    - gofumpt
-    - goheader
-    - goimports
-    - gomodguard
-    - goprintffuncname
-    - gosimple
-    - govet
-    - ineffassign
-    - misspell
-    - nakedret
-    - nestif
-    - staticcheck
-    - typecheck
-    - unconvert
-    - unused
-    - whitespace
-    - durationcheck
-    - forcetypeassert
-    - importas
-    - nilerr
-    - predeclared
-    - thelper
-    - tparallel
-    - promlinter
     - bodyclose
-    - godot
-    - funlen
+    - containedctx
+    - dogsled
+    - errname
     - gocritic
-    - prealloc
-    - nlreturn
+    - gofmt
+    - gosec
+    - lll
+    - nilerr
+    - revive
     - unparam
+    - wsl

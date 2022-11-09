@@ -34,6 +34,7 @@ func (cl CustomLogger) printf(level int, format string, a ...any) {
 	fatalStr := fmt.Sprintf("%s%s%s", colorYellow, "FATAL", colorYellow)
 
 	var logLevelStr string
+
 	switch level {
 	case debugLevel:
 		logLevelStr = debugStr
@@ -52,13 +53,15 @@ func (cl CustomLogger) printf(level int, format string, a ...any) {
 	timeNow := time.Now().Format("2006-01-02 15:04:05.000")
 	calldepth := 2
 	_, file, line, ok := runtime.Caller(calldepth)
+
 	if !ok {
 		file = "???"
 		line = 0
 	}
+
 	callerStr := fmt.Sprintf("%s:%d", file, line)
 
-	msg := fmt.Sprintf("%s:%s %s %s", timeNow, callerStr, logLevelStr, logStr)
+	msg := fmt.Sprintf("%s:%s | %s | %s", timeNow, callerStr, logLevelStr, logStr)
 	fmt.Println(msg)
 }
 

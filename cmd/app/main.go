@@ -46,6 +46,7 @@ func main() {
 
 	const timeout = 5 * time.Second
 	ctx, shutdown := context.WithTimeout(context.Background(), timeout)
+
 	defer shutdown()
 
 	if err := srv.Stop(ctx); err != nil {
