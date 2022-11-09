@@ -5,25 +5,35 @@ import (
 	"net/http"
 
 	"example.com/simple-crud/internal/config"
+	"example.com/simple-crud/internal/routers"
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 type Server struct {
 	httpServer *http.Server
+	router     *mux.Router
 }
 
-func NewServer(cfg *config.Config, handler http.Handler) *Server {
+func NewServer(cfg *config.Config) *Server {
 	serverAddr := cfg.SrvCfg.Host + ":" + cfg.SrvCfg.Port
-	s := &http.Server{
+	srv := &http.Server{
 		Addr:           serverAddr,
-		Handler:        handler,
 		ReadTimeout:    cfg.SrvCfg.ReadTimeout,
 		WriteTimeout:   cfg.SrvCfg.WriteTimeout,
 		MaxHeaderBytes: cfg.SrvCfg.MaxHeaderBytes,
 	}
 
-	return &Server{
-		httpServer: s,
+	s := &Server{
+		httpServer: srv,
 	}
+
+	s.router = routers.New()
+	s.router.Use(cors.AllowAll().Handler)
+
+	srv.Handler = s.router
+
+	return s
 }
 
 func (s *Server) Run() error {

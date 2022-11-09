@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"example.com/simple-crud/internal/config"
-	"example.com/simple-crud/internal/routers"
 	"example.com/simple-crud/internal/server"
 	logs "example.com/simple-crud/pkg/logger"
 )
@@ -26,10 +25,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	srvHandler := routers.Init()
-
 	// Make server with config
-	srv := server.NewServer(cfg, srvHandler)
+	srv := server.NewServer(cfg)
 
 	go func() {
 		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
@@ -37,7 +34,7 @@ func main() {
 		}
 	}()
 
-	logger.Info("server started")
+	logger.Infof("server started at '%s:%s'", cfg.SrvCfg.Host, cfg.SrvCfg.Port)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)

@@ -20,8 +20,8 @@ type ServerConfig struct {
 }
 
 func getEnv(envName string) (string, error) {
-	envVar := os.Getenv(envName)
-	if envVar == "" {
+	envVar, ok := os.LookupEnv(envName)
+	if !ok {
 		return "", fmt.Errorf("%s is nil!", envName)
 	}
 

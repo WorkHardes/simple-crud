@@ -1,19 +1,15 @@
 package routers
 
 import (
-	"fmt"
-	"net/http"
-
-	"github.com/julienschmidt/httprouter"
+	"example.com/simple-crud/internal/routers/users"
+	"github.com/gorilla/mux"
 )
 
-func Init() *httprouter.Router {
-	router := httprouter.New()
-	router.GET("/", IndexHandler)
+func New() *mux.Router {
+	router := mux.NewRouter()
+	apiRouter := router.PathPrefix("/api/v1").Subrouter()
+	apiRouter.HandleFunc("/list", users.IndexUsers).Methods("GET")
+	users.InitRouter(apiRouter)
 
 	return router
-}
-
-func IndexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Fprint(w, "Hello, World!")
 }
