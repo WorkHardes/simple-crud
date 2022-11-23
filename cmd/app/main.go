@@ -16,7 +16,7 @@ import (
 
 func main() {
 	// Init logger
-	logger := logs.NewCustomLogger()
+	logger := logs.New()
 
 	// Get server config
 	cfg, err := config.Init()
@@ -34,7 +34,7 @@ func main() {
 		}
 	}()
 
-	logger.Infof("server started at '%s:%s'", cfg.SrvCfg.Host, cfg.SrvCfg.Port)
+	logger.Infof("server started at http://%s:%s", cfg.SrvCfg.Host, cfg.SrvCfg.Port)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)

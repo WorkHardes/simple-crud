@@ -8,11 +8,16 @@ import (
 )
 
 var (
+	colorReset  = "\033[0m"
+	boldText    = "\033[1m"
 	colorRed    = "\033[31m"
 	colorGreen  = "\033[32m"
 	colorYellow = "\033[33m"
 	colorBlue   = "\033[34m"
+	colorWhite  = "\033[37m"
 )
+
+var debugStr, infoStr, errorStr, fatalStr string
 
 const (
 	debugLevel = iota + 1
@@ -23,33 +28,41 @@ const (
 
 type CustomLogger struct{}
 
-func NewCustomLogger() Logger {
+func New() Logger {
 	return CustomLogger{}
 }
 
-func (cl CustomLogger) printf(level int, format string, a ...any) {
-	debugStr := fmt.Sprintf("%s%s%s", colorBlue, "DEBUG", colorBlue)
-	infoStr := fmt.Sprintf("%s%s%s", colorGreen, "INFO", colorGreen)
-	errorStr := fmt.Sprintf("%s%s%s", colorRed, "ERROR", colorRed)
-	fatalStr := fmt.Sprintf("%s%s%s", colorYellow, "FATAL", colorYellow)
+func init() {
+	debugStr = fmt.Sprintf("%s%s%s%s", colorBlue, boldText, "DEBUG", colorReset)
+	infoStr = fmt.Sprintf("%s%s%s%s", boldText, colorWhite, "INFO", colorReset)
+	errorStr = fmt.Sprintf("%s%s%s%s", colorRed, boldText, "ERROR", colorReset)
+	fatalStr = fmt.Sprintf("%s%s%s%s", colorYellow, boldText, "FATAL", colorReset)
+}
 
-	var logLevelStr string
+func (cl CustomLogger) printf(level int, format string, a ...any) {
+	var currentColor, logLevelStr string
 
 	switch level {
 	case debugLevel:
 		logLevelStr = debugStr
+		currentColor = colorBlue
 	case infoLevel:
 		logLevelStr = infoStr
+		currentColor = colorWhite
 	case errorLevel:
 		logLevelStr = errorStr
+		currentColor = colorRed
 	case fatalLevel:
 		logLevelStr = fatalStr
+		currentColor = colorYellow
 	default:
 		logLevelStr = debugStr
+		currentColor = colorBlue
 	}
 
 	logMsg := fmt.Sprintf(format, a...)
-	logStr := logMsg
+	logStr := fmt.Sprintf("%s%s%s%s", currentColor, logMsg, currentColor, colorReset)
+
 	timeNow := time.Now().Format("2006-01-02 15:04:05.000")
 	calldepth := 2
 	_, file, line, ok := runtime.Caller(calldepth)
@@ -60,8 +73,9 @@ func (cl CustomLogger) printf(level int, format string, a ...any) {
 	}
 
 	callerStr := fmt.Sprintf("%s:%d", file, line)
+	timeAndCallerStr := fmt.Sprintf("%s%s:%s%s", colorGreen, timeNow, callerStr, colorReset)
 
-	msg := fmt.Sprintf("%s:%s | %s | %s", timeNow, callerStr, logLevelStr, logStr)
+	msg := fmt.Sprintf("%s | %s - %s", timeAndCallerStr, logLevelStr, logStr)
 	fmt.Println(msg)
 }
 
